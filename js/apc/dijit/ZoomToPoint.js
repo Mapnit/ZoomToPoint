@@ -99,8 +99,8 @@ define([
 		_bufferRadius: 0.0005,
 		
 		_coordRegEx: {
-			dms: /^[+-]?\d{1,3}\*?\s+\d{1,2}'?\s+\d{1,2}(\.\d+)?"?[NSEW]?$/i,
-			dd:  /^[+-]?\d{1,3}(\.\d+)?$/i,
+			dms: /^([+-]|[NSEW])?\d{1,3}(\.\d+)?\*?(\s+\d{1,2}(\.\d+)?'?(\s+\d{1,2}(\.\d+)?"?)?)?[NSEW]?$/i,
+			//dd:  /^[+-]?\d{1,3}(\.\d+)?$/i,
 			xy:  /^[+-]?\d+(\.\d+)?$/i
 		},
 
@@ -200,11 +200,6 @@ define([
         /* Private Event Handlers */
         /* ---------------------- */
 
-        _validateCoordSys: function() {
-        	console.log("_validateCoordSys"); 
-        	return true; 
-        }, 
-
 		_coordSysChanged: function(evt) {
 			//console.log("_coordSysChanged"); 
 			this.showMessage("");
@@ -233,40 +228,73 @@ define([
 			var result = {name: null, value: null}; 
 
 			var dmsParts = dmsText.split(/[\s\*:'"]/); 
-			if (dmsParts.length === 3) {
-				var dirSign; 
-				var deg = Number(dmsParts[0]), 
-					min = Number(dmsParts[1]),
-					sec = dmsParts[2].toUpperCase(); 
-				
-				if (isNaN(sec) !== true) {
-					sec = Number(sec);
+			if (dmsParts.length >= 1 && dmsParts.length <= 3) {
+				var dirSignArray = ["N", "E", "W", "S"]; 
+				var dirChar, dirSign; 
+				var deg, min, sec; 
+
+				deg = dmsParts[0].toUpperCase(); 
+				if (dmsParts.length >= 2)
+					min = dmsParts[1].toUpperCase();
+				if (dmsParts.length >= 3)
+					sec = dmsParts[2].toUpperCase();
+
+				// find the dir char
+				if (deg && array.indexOf(dirSignArray, deg[0]) > -1) {
+					dirChar = deg[0]; 
+					deg = deg.substring(1, deg.length-1); 
+				} else if (deg && array.indexOf(dirSignArray, deg[deg.length-1]) > -1) {
+					dirChar = deg[deg.length-1]; 
+					deg = deg.substring(0, deg.length-1); 
+				} else if (min && array.indexOf(dirSignArray, min[min.length-1]) > -1) {
+					dirChar = min[min.length-1]; 
+					min = min.substring(0, min.length-1);
+				} else if (sec && array.indexOf(dirSignArray, sec[sec.length-1]) > -1) {
+					dirChar = sec[sec.length-1]; 
+					sec = sec.substring(0, sec.length-1); 
+				}
+
+				// determine the lat/lon
+				deg = Number(deg); 
+				var valid, latOrLon; 
+				if (dirChar === "N" || dirChar === "S") {
+					valid = (deg > -90 && deg < 90); 
+					result["name"] = "lat";
+					dirSign = (dirChar === "N")?1:-1; 
+				} else if (dirChar === "E" || dirChar === "W") {
+					valid = (deg > -180 && deg < 180); 
+					result["name"] = "lon";
+					dirSign = (dirChar === "E")?1:-1; 
 				} else {
-					var dirChar = sec[sec.length-1]; 
-					sec = Number(sec.substring(0, sec.length-1));
-					switch(dirChar) {
-						case "N":
-						case "E":
-							dirSign = 1; 
-							break; 
-						case "W":
-						case "S":
-							dirSign = -1; 
-							break; 
+					valid = true; 
+					dirSign = 1; 
+					if (deg > -90 && deg < 90) {
+						result["name"] = "lat";
+					} else if (deg > -180 && deg < 180) {
+						result["name"] = "lon";
+					} else {
+						valid = false; 
 					}
 				}
 
-				var validDgree, latOrLon; 
-				if (dirChar === "N" || dirChar === "S") {
-					validDgree = (deg > -90 && deg < 90); 
-					result["name"] = "lat";
-				} else if (dirChar === "E" || dirChar === "W") {
-					validDgree = (deg > -180 && deg < 180); 
-					result["name"] = "lon";
-				}
-
-				if ( validDgree && (min >= 0 && min < 60) && (sec >= 0 && sec < 60) ) {
-					var coord = dirSign * (deg + (min/60) + (sec/3600));
+				// calculate the coordinate
+				var coord; 
+				if (valid === true) {
+					coord = dirSign * deg; 
+					if (min) {
+						min = Number(min); 
+						valid = valid && (min >= 0 && min < 60); 
+						if (valid === true) {
+							coord = dirSign * (deg + (min/60)); 
+							if (sec) {
+								sec = Number(sec); 
+								valid = valid && (sec >= 0 && sec < 60); 
+								if (valid === true) {
+									coord = dirSign * (deg + (min/60) + (sec/3600));
+								}
+							}
+						}
+					}
 					result["value"] = coord.toFixed(Number(this.precision));
 				}
 			}
@@ -300,7 +328,7 @@ define([
 
 					if (this._coordRegEx["dms"].test(coordX) === true 
 						&& this._coordRegEx["dms"].test(coordY) === true) {
-						// DMS format
+						// DMS or DD format
 						var results = []; 
 						results.push(this._convertDMS2Decimal(coordX)); 
 						results.push(this._convertDMS2Decimal(coordY));
@@ -313,13 +341,6 @@ define([
 						})); 
 						return (this._coordParseX.innerHTML !== null 
 								&& this._coordParseY.innerHTML !== null); 
-
-					} else if (this._coordRegEx["dd"].test(coordX) === true 
-						&& this._coordRegEx["dd"].test(coordY) === true) {
-						// decimal format
-						this._coordParseX.innerHTML = coordX;
-						this._coordParseY.innerHTML = coordY;
-						return true; 
 					}
 
 				} else {
@@ -401,7 +422,16 @@ define([
 												}));
 							break;
 						default:
-							this.showMessage("unsupported spatial reference (" + sr.wkid + ")"); 
+							var params = new ProjectParameters();
+							params.geometries = [point];
+							params.outSR = new SpatialReference({wkid: 4608 /* NAD27 */});
+							this.geometryService.project(params)
+												.then(lang.hitch(this, function(projGeometries) {
+													var projPoint = projGeometries[0];
+													this._plotPoint(projPoint);
+												}), lang.hitch(this, function(error) {
+													this.showMessage("projection failed: " + error.message);
+												}));
 					}					
 				} else {
 					this.showMessage("empty spatial reference"); 
