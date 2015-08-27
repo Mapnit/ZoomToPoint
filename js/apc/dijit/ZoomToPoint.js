@@ -242,45 +242,44 @@ define([
 				// find the dir char
 				if (deg && array.indexOf(dirSignArray, deg[0]) > -1) {
 					dirChar = deg[0]; 
-					deg = deg.substring(1, deg.length-1); 
+					deg = deg.substr(1, deg.length-1); 
 				} else if (deg && array.indexOf(dirSignArray, deg[deg.length-1]) > -1) {
 					dirChar = deg[deg.length-1]; 
-					deg = deg.substring(0, deg.length-1); 
+					deg = deg.substr(0, deg.length-1); 
 				} else if (min && array.indexOf(dirSignArray, min[min.length-1]) > -1) {
 					dirChar = min[min.length-1]; 
-					min = min.substring(0, min.length-1);
+					min = min.substr(0, min.length-1);
 				} else if (sec && array.indexOf(dirSignArray, sec[sec.length-1]) > -1) {
 					dirChar = sec[sec.length-1]; 
-					sec = sec.substring(0, sec.length-1); 
+					sec = sec.substr(0, sec.length-1); 
 				}
 
 				// determine the lat/lon
-				deg = Number(deg); 
-				var valid, latOrLon; 
-				if (dirChar === "N" || dirChar === "S") {
-					valid = (deg > -90 && deg < 90); 
-					result["name"] = "lat";
-					dirSign = (dirChar === "N")?1:-1; 
-				} else if (dirChar === "E" || dirChar === "W") {
-					valid = (deg > -180 && deg < 180); 
-					result["name"] = "lon";
-					dirSign = (dirChar === "E")?1:-1; 
-				} else {
-					valid = true; 
-					dirSign = 1; 
-					if (deg > -90 && deg < 90) {
-						result["name"] = "lat";
-					} else if (deg > -180 && deg < 180) {
-						result["name"] = "lon";
-					} else {
-						valid = false; 
-					}
-				}
-
-				// calculate the coordinate
-				var coord; 
+				var valid = !isNaN(deg); 
 				if (valid === true) {
-					coord = dirSign * deg; 
+					deg = Number(deg); 
+					if (dirChar === "N" || dirChar === "S") {
+						valid = (deg > -90 && deg < 90); 
+						result["name"] = "lat";
+						dirSign = (dirChar === "N")?1:-1; 
+					} else if (dirChar === "E" || dirChar === "W") {
+						valid = (deg > -180 && deg < 180); 
+						result["name"] = "lon";
+						dirSign = (dirChar === "E")?1:-1; 
+					} else {
+						valid = true; 
+						dirSign = 1; 
+						if (deg > -90 && deg < 90) {
+							result["name"] = "lat";
+						} else if (deg > -180 && deg < 180) {
+							result["name"] = "lon";
+						} else {
+							valid = false; 
+						}
+					}
+
+					// calculate the coordinate
+					var coord = dirSign * deg; 
 					if (min) {
 						min = Number(min); 
 						valid = valid && (min >= 0 && min < 60); 
@@ -298,7 +297,6 @@ define([
 					result["value"] = coord.toFixed(Number(this.precision));
 				}
 			}
-
 			return result;
 		},
 
