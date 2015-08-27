@@ -1,0 +1,30 @@
+<div>
+	<div class="${_css.title}">Enter X,Y or Latitude,Longitude: </div>
+	<input type="text" class="${_css.coordsInput}" data-dojo-attach-point="_coordsInput" data-dojo-attach-event="onkeyup:_coordsChanged" />
+	<input type="button" class="${_css.zoomToOne}" value="Zoom" data-dojo-attach-event="onclick:zoomToOne" />
+	<div>
+		<span>Longitude (X): </span><span data-dojo-attach-point="_coordParseX"></span>
+	</div>
+	<div>
+		<span>Latitude  (Y): </span><span data-dojo-attach-point="_coordParseY"></span>
+	<div/>
+	<span class="${_css.title}">Coordinate System: </span>
+	<div class="${_css.dropdownList}" 
+		data-dojo-type="dijit/form/FilteringSelect" 
+		data-dojo-props="searchAttr:'name'"
+		data-dojo-attach-event="onChange:_coordSysChanged"
+		data-dojo-attach-point="_coordSysFltSelect"
+		>
+	</div>
+	<hr />
+	<div class="${_css.help}">
+		Examples: decimal degree (40.7228, -73.9996) or degree minute second (40 43 22.185N, 73 59 58.563W)
+	</div>
+	<span data-dojo-attach-point="_status" class="${_css.statusMessage}"></span>
+	<div class="${_css.pointListContainer}" data-dojo-attach-point="_pointListContainer">
+		<input type="button" class="${_css.clearAll}" value="Clear Points" data-dojo-attach-event="onclick:clearAll" />
+		<input type="button" class="${_css.saveAll}" value="Save Points" data-dojo-attach-event="onclick:saveAll" />
+		<input type="button" class="${_css.zoomToAll}" value="Zoom to Points" data-dojo-attach-event="onclick:zoomToAll" />
+		<ul class="${_css.pointList}" data-dojo-attach-point="_pointList"></ul>
+	<div>
+</div>

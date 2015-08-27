@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <!--The viewport meta tag is used to improve the presentation and behavior of the samples on iOS devices-->
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+	<title>Zoom To Point</title>
+	
+    <link rel="stylesheet" href="//js.arcgis.com/3.13/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="//js.arcgis.com/3.13/esri/css/esri.css">
+    <link rel="stylesheet" href="css/ZoomToPoint.css">
+	<style>
+		html, body, #map {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #coords {
+            position: absolute;
+            right: 15px;
+            bottom: 5px;
+            color: #000;
+            z-index: 50;
+            font-family: Arial;
+            font-size: 14px;
+            text-align: left;
+        }	
+		
+		#zoomToPointWidget {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+            background: #fff;
+            color: #777;
+            padding: 5px;
+            border: 2px solid #666;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            font-family: arial;
+            font-size: 0.9em;
+        }
+	</style>
+	<script>
+		var package_path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+        var dojoConfig = {
+            parseOnLoad: true,
+            debug: true,
+            packages: [{
+                name: "apc",
+                location: package_path + '/js/apc'
+            }]
+        }; 
+	</script>
+	<script src="//js.arcgis.com/3.13/"></script>
+	<script>
+		var map; 
+
+        var geometryServiceUrl = "http://localhost/GeometryServer";
+		
+		var supportedCoordSys = [
+			{name:"WGS84", wkid:4326},
+			{name:"NAD27", wkid:4608},
+			{name:"NAD83", wkid:4759}
+		]; 
+		
+		var pointMarkerSymbol = {
+			"type": "esriSMS",
+			"style": "esriSMSCircle",
+			"color": [0,0,255,255],
+			"size": 6,
+			"angle": 0,
+			"xoffset": 0,
+			"yoffset": 0,
+			"outline": {
+				"color": [0,0,255,255],
+				"width": 2
+			}
+		}; 
+		
+		var pictureMarkerSymbol = {
+		  "type":"esriPMS", 
+		  "url":"images/drop_pin.png",
+		  "height":30,
+		  "width":17,
+		  "angle": -30
+		};
+
+		require([
+            "esri/config", 
+			"esri/map", 
+			"esri/dijit/Scalebar",
+            "esri/tasks/GeometryService", 
+			"esri/geometry/webMercatorUtils",
+			"dojo/dom", "dijit/registry", 
+			"apc/dijit/ZoomToPoint"
+		], function(
+            esriConfig, 
+			Map, Scalebar, GeometryService, WebMercatorUtils,
+			dom, registry
+		) {
+
+            // in-script proxy
+            //esriConfig.defaults.io.corsEnabledServers.push(geometryServiceUrl);
+
+			map = new Map("map", {
+                basemap: "topo",
+                center: [-97.70, 38.82], // longitude, latitude
+                zoom: 4
+            });
+
+            map.on("load", function () {
+                //after map loads, connect to listen to mouse move & drag events
+                map.on("mouse-move", showCoordinates);
+                map.on("mouse-drag", showCoordinates);
+            });
+
+            //hide the popup if its outside the map's extent
+            map.on("mouse-drag", function (evt) {
+                if (map.infoWindow.isShowing) {
+                    var loc = map.infoWindow.getSelectedFeature().geometry;
+                    if (!map.extent.contains(loc)) {
+                        map.infoWindow.hide();
+                    }
+                }
+            });
+
+            var scalebar = new Scalebar({
+                map: map,
+                // "dual" displays both miles and kilmometers
+                // "english" is the default, which displays miles
+                // use "metric" for kilometers
+                scalebarUnit: "dual"
+            });
+
+            function showCoordinates(evt) {
+                //the map is in web mercator but display coordinates in geographic (lat, long)
+                var mp = WebMercatorUtils.webMercatorToGeographic(evt.mapPoint);
+                //display mouse coordinates
+                dom.byId("coords").innerHTML = "Lat: " + mp.x.toFixed(3) + "<p>Lon:" + mp.y.toFixed(3);
+            }
+
+			var zoomToPoint = new ZoomToPoint({
+				map: map, 
+				precision: 10, 
+				//markerSymbol: pointMarkerSymbol,
+				markerSymbol: pictureMarkerSymbol,
+                geometryService: new GeometryService(geometryServiceUrl)
+				//coordSysOptions: supportedCoordSys
+			}, "zoomToPointWidget"); 
+			
+			zoomToPoint.on("clearAll", function(evt) {
+				console.log("clear all points"); 
+			}); 
+
+            zoomToPoint.on("zoomAll", function(evt) {
+                console.log("all points zoomed"); 
+            });
+			
+			zoomToPoint.on("zoom", function(evt) {
+				console.log("point zoomed"); 
+			}); 
+
+            zoomToPoint.on("saveAll-start", function(pointArray) {
+                console.log("points to be saved: "+ pointArray); 
+            }); 
+			
+			zoomToPoint.startup();
+			
+		});
+	</script>
+	
+</head>
+<body class="claro esri">
+    <div id="map">
+        <div id="zoomToPointWidget"></div>
+    </div>
+    <span id="coords"></span>
+</body>
+</html>

@@ -1,0 +1,71 @@
+.pointZoom-inputTitle {
+	font-size: 12px; 
+	font-weight: bold;
+	margin-top: 5px;
+	margin-right: 5px; 
+	margin-bottom: 8px;
+}
+
+.pointZoom-helpText {
+	font-size: 10px; 
+	width: 250px; 
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.pointZoom-CoordsInput {
+	/*width: 185px; */
+	margin-bottom: 5px;
+}
+
+.pointZoom-DropdownList {
+	font-family: arial;
+	font-size: 12px;
+	width: 100px; 
+}
+
+.pointZoom-zoomToOne {
+	position: relative; 
+	float: right;
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+.pointZoom-status {
+	position: absolute;
+	right: 5px;
+    top: 50px;
+    color: yellow;
+    background-color: red;
+    font-weight:bold;
+}
+
+.pointZoom-pointListContainer {
+	display: none;
+}
+
+.pointZoom-clearAll {
+
+}
+
+.pointZoom-zoomToAll {
+	margin-left: 50px;
+}
+
+.pointZoom-saveAll {
+	display: none; 
+}
+
+.pointZoom-pointList {
+    border: 2px solid #ccc;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    font-family: arial;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+.pointZoom-pointItem {
+
+}
