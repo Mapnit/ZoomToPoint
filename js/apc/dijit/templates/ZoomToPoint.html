@@ -10,10 +10,10 @@
 	<div/>
 	<span class="${_css.title}">Coordinate System: </span>
 	<div class="${_css.dropdownList}" 
-		data-dojo-type="dijit/form/FilteringSelect" 
-		data-dojo-props="searchAttr:'name'"
+		data-dojo-type="dijit/form/ComboBox" 
+		data-dojo-props="searchAttr:'name',required:true"
 		data-dojo-attach-event="onChange:_coordSysChanged"
-		data-dojo-attach-point="_coordSysFltSelect"
+		data-dojo-attach-point="_coordSysComboBox"
 		>
 	</div>
 	<hr />

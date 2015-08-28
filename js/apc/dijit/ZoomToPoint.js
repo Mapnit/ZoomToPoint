@@ -16,7 +16,7 @@ define([
     "dojo/ready",
 	
 	"dojo/store/Memory",
-	"dijit/form/FilteringSelect", 
+	"dijit/form/ComboBox", 
 	
 	"esri/geometry/webMercatorUtils",
 	"esri/tasks/ProjectParameters",
@@ -34,7 +34,7 @@ define([
 	_WidgetBase, Evented, 
 	declare, lang, array, parser, _TemplatedMixin, _WidgetsInTemplateMixin, 
 	on, dom, domConstruct, domClass, domStyle, ready, 
-	Memory, FilteringSelect, 
+	Memory, ComboBox, 
 	webMercatorUtils, ProjectParameters, GeometryService, 
 	GraphicsLayer, Extent, Point, Graphic, SpatialReference,
 	PictureMarkerSymbol, SimpleMarkerSymbol,
@@ -100,13 +100,13 @@ define([
 		
 		_coordRegEx: {
 			dms: /^([+-]|[NSEW])?\d{1,3}(\.\d+)?\*?(\s+\d{1,2}(\.\d+)?'?(\s+\d{1,2}(\.\d+)?"?)?)?[NSEW]?$/i,
-			//dd:  /^[+-]?\d{1,3}(\.\d+)?$/i,
+			dd:  /^[+-]?\d{1,3}(\.\d+)?$/i,
 			xy:  /^[+-]?\d+(\.\d+)?$/i
 		},
 
 		_srWGSWkids: [4326],
+		_selectedWkid: null,
 
-		_selectedWkid: null, 
 		_pointLayer: null, 
 		_extent: null, 
 		_inputValidated: false, 
@@ -173,11 +173,10 @@ define([
 					items: this.coordSysOptions
 				}
 			});
-			this._coordSysFltSelect.set("store", coordSysStore); 
+			this._coordSysComboBox.set("store", coordSysStore); 
 			if (this.coordSysOptions && this.coordSysOptions[0]) {
 				var firstOption = this.coordSysOptions[0];
-				this._coordSysFltSelect.set("value", firstOption["wkid"]); 
-				this._coordSysFltSelect.set("displayValue", firstOption["name"]); 
+				this._coordSysComboBox.set("value", firstOption["name"]); 
 			}
 			// 
 			// not display the PointList container
@@ -205,6 +204,13 @@ define([
 			this.showMessage("");
 
 			this._selectedWkid = evt; 
+			for(var i=0, l=this.coordSysOptions.length; i<l; i++) {
+				var item = this.coordSysOptions[i]; 
+				if (item["name"] === evt) {
+					this._selectedWkid = item["wkid"]; 
+					break; 
+				}
+			}
 
 			var coordsInput = this._coordsInput.value;
 			if (coordsInput) {
@@ -270,7 +276,7 @@ define([
 						valid = true; 
 						dirSign = 1; 
 						if (deg > -90 && deg < 90) {
-							result["name"] = "lat";
+							//result["name"] = "lat";
 						} else if (deg > -180 && deg < 180) {
 							result["name"] = "lon";
 						} else {
@@ -304,25 +310,15 @@ define([
 			
 			this._coordParseX.innerHTML = "";
 			this._coordParseY.innerHTML = "";
-				
+
 			var coordArray = coordsText.split(/[,;\/\\|]+/); 
 			if(coordArray.length === 2) {
 
-				// input format: Lat, Lon
-				var coordX = coordArray[1].trim(); 
-				var coordY = coordArray[0].trim(); 
-
-				if (map.spatialReference.wkid === wkid) {
-					// assume some sort of WebMercator
-					if (this._coordRegEx["xy"].test(coordX) === true 
-						&& this._coordRegEx["xy"].test(coordY) === true) {
-						// XY format
-						this._coordParseX.innerHTML = coordX;
-						this._coordParseY.innerHTML = coordY;
-						return true; 
-					}
-
-				} else if (array.indexOf(this._srWGSWkids, wkid) > -1) {
+				var coordX, coordY; 
+				if (array.indexOf(this._srWGSWkids, wkid) > -1) {
+					// input format: Lat, Lon
+					coordX = coordArray[1].trim(); 
+					coordY = coordArray[0].trim(); 
 
 					if (this._coordRegEx["dms"].test(coordX) === true 
 						&& this._coordRegEx["dms"].test(coordY) === true) {
@@ -330,18 +326,28 @@ define([
 						var results = []; 
 						results.push(this._convertDMS2Decimal(coordX)); 
 						results.push(this._convertDMS2Decimal(coordY));
-						array.forEach(results, lang.hitch(this, function(item) {
+
+						for(var c=0,l=results.length; c<l; c++) {
+							var item = results[c]; 
 							if (item["name"] === "lat") {
 								this._coordParseY.innerHTML = item["value"];
 							} else if (item["name"] === "lon") {
 								this._coordParseX.innerHTML = item["value"];
+							} else {
+								if (c === 0 && this._coordParseX.innerHTML.length === 0)
+									this._coordParseX.innerHTML = item["value"];
+								else if (this._coordParseY.innerHTML.length === 0)
+									this._coordParseY.innerHTML = item["value"];
 							}
-						})); 
-						return (this._coordParseX.innerHTML !== null 
-								&& this._coordParseY.innerHTML !== null); 
+						}; 
+						return (this._coordParseX.innerHTML.length > 0 
+								&& this._coordParseY.innerHTML.length > 0); 
 					}
 
 				} else {
+					// input format: X, Y
+					coordX = coordArray[0].trim(); 
+					coordY = coordArray[1].trim(); 
 
 					if (this._coordRegEx["xy"].test(coordX) === true 
 						&& this._coordRegEx["xy"].test(coordY) === true) {
@@ -370,11 +376,20 @@ define([
 			}
 		}, 
 
+		_plotPointFailed: function(error) {
+			var errMsg = error.message; 
+			if (error.details && error.details[0]) {
+				errMsg = error.details[0]; 
+			}
+			this.showMessage("projection failed: " + errMsg);
+		},
+
 		/*
 		 * Plot a point executes the following sequences: 
 		 * - if WGS84, plot the point on the map directly;
 		 * - if NAD83, project to WGS84 first; 
 		 * - if NAD27, project to NAD83 first; 
+		 * - otherwise, project to NAD27 first; 
 		 */
 		_plotPoint: function(point) {
 			if (point) {
@@ -403,7 +418,7 @@ define([
 													var projPoint = projGeometries[0];
 													this._plotPoint(projPoint);
 												}), lang.hitch(this, function(error) {
-													this.showMessage("projection failed: " + error.message);
+													this._plotPointFailed(error); 
 												}));
 							break;
 						case 4608 /* NAD27 */: 
@@ -416,7 +431,7 @@ define([
 													var projPoint = projGeometries[0];
 													this._plotPoint(projPoint);
 												}), lang.hitch(this, function(error) {
-													this.showMessage("projection failed: " + error.message);
+													this._plotPointFailed(error); 
 												}));
 							break;
 						default:
@@ -428,7 +443,7 @@ define([
 													var projPoint = projGeometries[0];
 													this._plotPoint(projPoint);
 												}), lang.hitch(this, function(error) {
-													this.showMessage("projection failed: " + error.message);
+													this._plotPointFailed(error); 
 												}));
 					}					
 				} else {
