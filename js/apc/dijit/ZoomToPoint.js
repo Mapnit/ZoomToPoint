@@ -104,7 +104,7 @@ define([
 			xy:  /^[+-]?\d+(\.\d+)?$/i
 		},
 
-		_srWGSWkids: [4326],
+		_srWGSWkids: [4326, 4759, 4608],
 		_selectedWkid: null,
 
 		_pointLayer: null, 
