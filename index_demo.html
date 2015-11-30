@@ -140,7 +140,7 @@
                 //the map is in web mercator but display coordinates in geographic (lat, long)
                 var mp = WebMercatorUtils.webMercatorToGeographic(evt.mapPoint);
                 //display mouse coordinates
-                dom.byId("coords").innerHTML = "Lat: " + mp.x.toFixed(3) + "<p>Lon:" + mp.y.toFixed(3);
+                dom.byId("coords").innerHTML = "Lat: " + mp.y.toFixed(3) + "<p>Lon:" + mp.x.toFixed(3);
             }
 
 			var zoomToPoint = new ZoomToPoint({
