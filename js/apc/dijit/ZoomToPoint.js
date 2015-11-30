@@ -329,9 +329,11 @@ define([
 
 						for(var c=0,l=results.length; c<l; c++) {
 							var item = results[c]; 
-							if (item["name"] === "lat") {
+							var other = results[(c+1)%2]; 
+
+							if (item["name"] === "lat" || other["name"] === "lon") {
 								this._coordParseY.innerHTML = item["value"];
-							} else if (item["name"] === "lon") {
+							} else if (item["name"] === "lon" || other["name"] === "lat") {
 								this._coordParseX.innerHTML = item["value"];
 							} else {
 								if (c === 0 && this._coordParseX.innerHTML.length === 0)
