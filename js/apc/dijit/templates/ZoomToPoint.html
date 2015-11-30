@@ -1,6 +1,6 @@
 <div>
 	<div class="${_css.title}">Enter X,Y or Latitude,Longitude: </div>
-	<input type="text" class="${_css.coordsInput}" data-dojo-attach-point="_coordsInput" data-dojo-attach-event="onkeyup:_coordsChanged" />
+	<input type="text" class="${_css.coordsInput}" data-dojo-attach-point="_coordsInput" data-dojo-attach-event="onChange:_coordsChanged,onkeyup:_coordsChanged" />
 	<input type="button" class="${_css.zoomToOne}" value="Zoom" data-dojo-attach-event="onclick:zoomToOne" />
 	<div>
 		<span>Longitude (X): </span><span data-dojo-attach-point="_coordParseX"></span>
