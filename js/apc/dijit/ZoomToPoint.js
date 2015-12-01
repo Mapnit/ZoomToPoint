@@ -348,8 +348,8 @@ define([
 
 				} else {
 					// input format: X, Y
-					coordX = coordArray[1].trim(); 
-					coordY = coordArray[0].trim(); 
+					coordX = coordArray[0].trim(); 
+					coordY = coordArray[1].trim(); 
 
 					if (this._coordRegEx["xy"].test(coordX) === true 
 						&& this._coordRegEx["xy"].test(coordY) === true) {
