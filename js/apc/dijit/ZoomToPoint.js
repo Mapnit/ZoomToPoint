@@ -311,9 +311,9 @@ define([
 			this._coordParseX.innerHTML = "";
 			this._coordParseY.innerHTML = "";
 
-			var coordArray = coordsText.split(/[,;\/\\|]+/); 
+			var coordArray = coordsText.split(/[,;\/\\|\s]+/); 
 
-			if (coordArray.length === 1) {
+			if (coordArray.length === 1 || coordArray.length > 2) {
 				coordArray = []; 
 				var coordParts = coordsText.split(/\s+/);
 				var dirIdx, item, coordIdx, cnt = 0; 
@@ -352,7 +352,6 @@ define([
 			}
 			
 			if (coordArray.length === 2) {
-
 				var coordX, coordY; 
 				if (array.indexOf(this._srWGSWkids, wkid) > -1) {
 					// input format: Lat, Lon
