@@ -212,7 +212,7 @@ define([
 				}
 			}
 
-			var coordsInput = this._coordsInput.value;
+			var coordsInput = this._cleanCoords(this._coordsInput.value);
 			if (coordsInput) {
 				this._inputValidated = this._parseAndValidate(coordsInput, this._selectedWkid);
 			}
@@ -225,9 +225,32 @@ define([
 			if ((evt.keyCode || evt.which) === 13 /* enter */) {
 				this.zoomToOne(); 
 			} else {			
-				var coordsInput = this._coordsInput.value;
+				var coordsInput = this._cleanCoords(this._coordsInput.value);
 				this._inputValidated = this._parseAndValidate(coordsInput, this._selectedWkid);
 			}
+		}, 
+		
+		_cleanCoords: function(coordsText) {
+			//console.log("input coordsText = " + coordsText);
+			if (coordsText) {
+				var startIdx=0, endIdx=coordsText.length-1, c, l; 
+				var regExp = /^[0-9\+\-\.NSEW]+$/i; 
+				for(c=0,l=coordsText.length; c<l; c++) {
+					if (coordsText[c].search(regExp) > -1) {
+						startIdx = c; 
+						break; 
+					}
+				}
+				for(c=coordsText.length-1,l=0; c>=l; c--) {
+					if (coordsText[c].search(regExp) > -1) {
+						endIdx = c; 
+						break; 
+					}
+				} 
+				coordsText = coordsText.substring(startIdx, endIdx+1); 
+			}
+			//console.log("cleaned coordsText = " + coordsText);
+			return coordsText; 
 		}, 
 
 		_convertDMS2Decimal: function(dmsText) {
