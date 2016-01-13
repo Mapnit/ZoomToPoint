@@ -143,7 +143,7 @@ define([
             // map not defined
             if (!this.map) {
               this.destroy();
-              console.log('FileUploader::map required');
+              console.log('ZoomToPoint::map required');
             }
             // when map is loaded
             if (this.map.loaded) {
