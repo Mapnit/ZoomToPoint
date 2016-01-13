@@ -334,43 +334,47 @@ define([
 			this._coordParseX.innerHTML = "";
 			this._coordParseY.innerHTML = "";
 
-			var coordArray = coordsText.split(/[,;\/\\|\s]+/); 
+			var coordArray = coordsText.split(/[,;\/\\|]+/); 
 
-			if (coordArray.length === 1 || coordArray.length > 2) {
-				coordArray = []; 
+			if (coordArray.length === 1) {
 				var coordParts = coordsText.split(/\s+/);
-				var dirIdx, item, coordIdx, cnt = 0; 
-				for (var p=0, l=coordParts.length; p<l; p++) {
-					item = coordParts[p]; 
-					dirIdx = item.search(/[NSEW]/i); 
-					if (dirIdx === 0 /*dir sign appears first*/) {
-						// add new coord
-						coordArray.push(item); 
-						coordIdx = coordArray.length-1;
-						cnt = 1; 
-					} else if (dirIdx === item.length-1 /*dir sign appears last*/) {
-						if (cnt === 0) {
-							// prev is already full, so add new coord
-							coordArray.push(item);
-							coordIdx = coordArray.length-1;
-							if (coordIdx === 1)
-								cnt = 1; 
-						} else {
-							coordArray[coordIdx] += (" " + item);
-							// reset the count
-							cnt = 0; 
-						}
-					} else {
-						if (cnt === 0) {
+				if ( coordParts.length === 2) {
+					coordArray = coordParts; 
+				} else {
+					coordArray = []; 				
+					var dirIdx, item, coordIdx, cnt = 0; 
+					for (var p=0, l=coordParts.length; p<l; p++) {
+						item = coordParts[p]; 
+						dirIdx = item.search(/[NSEW]/i); 
+						if (dirIdx === 0 /*dir sign appears first*/) {
+							// add new coord
 							coordArray.push(item); 
 							coordIdx = coordArray.length-1;
+							cnt = 1; 
+						} else if (dirIdx === item.length-1 /*dir sign appears last*/) {
+							if (cnt === 0) {
+								// prev is already full, so add new coord
+								coordArray.push(item);
+								coordIdx = coordArray.length-1;
+								if (coordIdx === 1)
+									cnt = 1; 
+							} else {
+								coordArray[coordIdx] += (" " + item);
+								// reset the count
+								cnt = 0; 
+							}
 						} else {
-							coordArray[coordIdx] += (" " + item);
+							if (cnt === 0) {
+								coordArray.push(item); 
+								coordIdx = coordArray.length-1;
+							} else {
+								coordArray[coordIdx] += (" " + item);
+							}
+							if (++cnt == 3) {
+								cnt = 0; 
+							}
 						}
-						if (++cnt == 3) {
-							cnt = 0; 
-						}
-					}
+					}					
 				}
 			}
 			
