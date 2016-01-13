@@ -3,11 +3,11 @@
 	<input type="text" class="${_css.coordsInput}" data-dojo-attach-point="_coordsInput" data-dojo-attach-event="onChange:_coordsChanged,onkeyup:_coordsChanged" />
 	<input type="button" class="${_css.zoomToOne}" value="Zoom" data-dojo-attach-event="onclick:zoomToOne" />
 	<div>
-		<span>Longitude (X): </span><span data-dojo-attach-point="_coordParseX"></span>
-	</div>
-	<div>
 		<span>Latitude  (Y): </span><span data-dojo-attach-point="_coordParseY"></span>
 	<div/>
+	<div>
+		<span>Longitude (X): </span><span data-dojo-attach-point="_coordParseX"></span>
+	</div>
 	<span class="${_css.title}">Coordinate System: </span>
 	<div class="${_css.dropdownList}" 
 		data-dojo-type="dijit/form/ComboBox" 
@@ -18,7 +18,7 @@
 	</div>
 	<hr />
 	<div class="${_css.help}">
-		Examples: decimal degree (40.7228, -73.9996) or degree minute second (40 43 22.185N, 73 59 58.563W)
+		Examples: decimal degree (-73.9996, 40.7228) or degree minute second (73 59 58.563W, 40 43 22.185N)
 	</div>
 	<span data-dojo-attach-point="_status" class="${_css.statusMessage}"></span>
 	<div class="${_css.pointListContainer}" data-dojo-attach-point="_pointListContainer">
