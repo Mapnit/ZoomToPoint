@@ -475,7 +475,7 @@ define([
 								this._addPointToList(point); 
 							}
 							break; 
-						case 4759 /* NAD83 */:
+						case 4269 /* NAD83 */:
 							var params = new ProjectParameters();
 							params.geometries = [point];
 							params.outSR = new SpatialReference({wkid: 4326 /* WGS84 */});
@@ -488,10 +488,10 @@ define([
 													this._plotPointFailed(error); 
 												}));
 							break;
-						case 4608 /* NAD27 */: 
+						case 4267 /* NAD27 */: 
 							var params = new ProjectParameters();
 							params.geometries = [point];
-							params.outSR = new SpatialReference({wkid: 4759 /* NAD83 */});
+							params.outSR = new SpatialReference({wkid: 4269 /* NAD83 */});
 							params.transformation = {wkid: 1241};
 							this.geometryService.project(params)
 												.then(lang.hitch(this, function(projGeometries) {
@@ -504,7 +504,7 @@ define([
 						default:
 							var params = new ProjectParameters();
 							params.geometries = [point];
-							params.outSR = new SpatialReference({wkid: 4608 /* NAD27 */});
+							params.outSR = new SpatialReference({wkid: 4267 /* NAD27 */});
 							this.geometryService.project(params)
 												.then(lang.hitch(this, function(projGeometries) {
 													var projPoint = projGeometries[0];
