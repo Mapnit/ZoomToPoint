@@ -51,8 +51,8 @@ define([
 			geometryService: null, 
 			coordSysOptions: [
 				{name:"WGS84", wkid:4326},
-				{name:"NAD83", wkid:4759},
-				{name:"NAD27", wkid:4608}
+				{name:"NAD83", wkid:4269},
+				{name:"NAD27", wkid:4267}
 			], 
 			markerSymbol: {
 				"type": "esriSMS",
@@ -104,7 +104,7 @@ define([
 			xy:  /^[+-]?\d+(\.\d+)?$/i
 		},
 
-		_srWGSWkids: [4326, 4759, 4608],
+		_srWGSWkids: [4326, 4269, 4267],
 		_selectedWkid: null,
 
 		_pointLayer: null, 
